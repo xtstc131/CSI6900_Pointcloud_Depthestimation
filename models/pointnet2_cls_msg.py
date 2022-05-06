@@ -4,11 +4,11 @@ from .pointnet2_utils import PointNetSetAbstractionMsg, PointNetSetAbstraction
 import torch
 from torch.autograd import Variable
 class PointnetBins(nn.Module):
-    def __init__(self, n_bins=100, normal_channel=True):
+    def __init__(self, n_bins=100, normal_channel=False):
         super(PointnetBins, self).__init__()
         in_channel = 3 if normal_channel else 0
         self.normal_channel = normal_channel
-        self.sa1 = PointNetSetAbstractionMsg(512, [0.1, 0.2, 0.4], [16, 32, 128], in_channel, [
+        self.sa1 = PointNetSetAbstractionMsg(256, [0.1, 0.2, 0.4], [16, 32, 128], in_channel, [
                                              [32, 32, 64], [64, 64, 128], [64, 96, 128]])
         self.sa2 = PointNetSetAbstractionMsg(128, [0.2, 0.4, 0.8], [32, 64, 128], 320, [
                                              [64, 64, 128], [128, 128, 256], [128, 128, 256]])
@@ -52,6 +52,6 @@ class get_loss(nn.Module):
 
 if __name__ == '__main__':
     sim_data = Variable(torch.rand(32,3,512))
-    model = PointnetBins(n_bins = 100,normal_channel=False)
+    model = PointnetBins(n_bins = 100,normal_channel=True)
     bins, _ = model(sim_data)
     print('class', bins.size())

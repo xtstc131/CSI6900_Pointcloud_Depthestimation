@@ -107,7 +107,7 @@ class DataLoadPreprocess(Dataset):
                 pc_path = os.path.join(
                     self.args.pc_path, remove_leading_slash(sample_path.split()[2]))
 
-            image = Image.open(image_path)
+            image = Image.open(image_path).convert('RGB')
             depth_gt = Image.open(depth_path)
             pcd = o3d.io.read_point_cloud(pc_path)
             if self.args.do_kb_crop is True:
@@ -155,9 +155,13 @@ class DataLoadPreprocess(Dataset):
 
             image_path = os.path.join(
                 data_path, remove_leading_slash(sample_path.split()[0]))
-            image = np.asarray(Image.open(image_path),
-                               dtype=np.float32) / 255.0
+            pc_path = os.path.join(
+                self.args.pc_path, remove_leading_slash(sample_path.split()[2]))
 
+            image = np.asarray(Image.open(image_path).convert('RGB'),
+                               dtype=np.float32) / 255.0
+            pcd = o3d.io.read_point_cloud(pc_path)
+            pcd = np.asarray(pcd.points)
             if self.mode == 'online_eval':
                 gt_path = self.args.gt_path_eval
                 depth_path = os.path.join(
@@ -190,10 +194,10 @@ class DataLoadPreprocess(Dataset):
                                         352, left_margin:left_margin + 1216, :]
 
             if self.mode == 'online_eval':
-                sample = {'image': image, 'depth': depth_gt, 'focal': focal, 'has_valid_depth': has_valid_depth,
+                sample = {'image': image, 'depth': depth_gt, 'focal': focal, 'pcd': pcd, 'has_valid_depth': has_valid_depth,
                           'image_path': sample_path.split()[0], 'depth_path': sample_path.split()[1]}
             else:
-                sample = {'image': image, 'focal': focal}
+                sample = {'image': image, 'focal': focal, 'pcd': pcd}
 
         if self.transform:
             sample = self.transform(sample)
@@ -265,7 +269,8 @@ class ToTensor(object):
         pcd = sample['pcd']
         image = self.to_tensor(image)
         image = self.normalize(image)
-        pcd = torch.from_numpy(pcd)
+        pcd = pcd.transpose((1, 0))
+        pcd = torch.from_numpy(pcd).type(torch.FloatTensor)
         if self.mode == 'test':
             return {'image': image, 'focal': focal}
 
@@ -276,7 +281,7 @@ class ToTensor(object):
         else:
             has_valid_depth = sample['has_valid_depth']
             return {'image': image, 'depth': depth, 'focal': focal, 'has_valid_depth': has_valid_depth,
-                    'image_path': sample['image_path'], 'depth_path': sample['depth_path']}
+                    'image_path': sample['image_path'], 'depth_path': sample['depth_path'], 'pcd':pcd}
 
     def to_tensor(self, pic):
         if not (_is_pil_image(pic) or _is_numpy_image(pic)):

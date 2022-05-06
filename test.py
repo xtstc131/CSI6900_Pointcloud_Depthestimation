@@ -148,15 +148,14 @@ import numpy as np
 from PIL import Image
 
 
-def test_nyu_depth_dataset():
-    path_to_train = './dataset/nyuv2/train/1234_depth.png'
-    im = Image.open(path_to_train)
-    i = np.asarray(im)
-    depth_arr = (i / 1000.0)
-    im.show()
-    im2 = Image.fromarray(depth_arr)
-    im2.show()
-
+# def test_nyu_depth_dataset():
+#     path_to_train = 'dataset/nyu_depth_v2/train/1385_depth.png'
+#     im = Image.open(path_to_train)
+#     i = np.asarray(im)
+#     # depth_arr = (i / 1000.0)
+#     print(i.shape)
+#     im.show()
+# test_nyu_depth_dataset()
 
 if __name__ == '__main__':
     torch.cuda.empty_cache()
@@ -166,9 +165,9 @@ if __name__ == '__main__':
     model = models.UnetAdaptiveBinsPointcloud.build(
         n_bins=128).to(multi_inputdevice)
 
-    pointcloud = torch.rand(2, 3, 512).to(multi_inputdevice)
-    x = torch.rand(2, 3, 480, 640).to(multi_inputdevice)
+    pointcloud = torch.rand(2, 3, 512 ).type(torch.float64).to(multi_inputdevice)
+    x = torch.rand(2, 3, 416, 544).to(multi_inputdevice)
 
     bin_edges, pred = model(x, pointcloud)
-
+    
     print(bin_edges.shape, pred.shape)
