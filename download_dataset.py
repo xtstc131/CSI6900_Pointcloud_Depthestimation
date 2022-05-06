@@ -1,8 +1,8 @@
+import os
+from pathlib import Path
 
 import numpy as np
-import os
 import requests
-from pathlib import Path
 from tqdm import tqdm
 
 
@@ -55,8 +55,9 @@ if __name__ == '__main__':
 
     class_list = ["bike", "book", "bottle", "camera",
                   "cereal_box", "chair", "cup", "laptop", "shoe"]
-    sub_url_train = "/v1/index/" + class_list[0] + "_annotations_train"
-    sub_url_test = "/v1/index/" + class_list[0] + "_annotations_test"
+
+    sub_url_train = "/v1/index/" + class_list[5] + "_annotations_train"
+    sub_url_test = "/v1/index/" + class_list[5] + "_annotations_test"
     blob_path_train = public_url + sub_url_train
     blob_path_test = public_url + sub_url_test
 
@@ -66,5 +67,5 @@ if __name__ == '__main__':
     video_ids_test = requests.get(blob_path_test).text
     video_ids_test = video_ids_test.split('\n')
     print(len(video_ids_test))
-    # download_dataset(public_url, video_ids_train, True)
+    download_dataset(public_url, video_ids_train, True)
     download_dataset(public_url, video_ids_test, False)
